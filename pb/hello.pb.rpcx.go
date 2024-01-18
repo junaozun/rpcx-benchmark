@@ -45,27 +45,3 @@ func (c *HelloTestEtcdV3Client) SayHello(ctx context.Context, req *HelloRequest)
 	err = c.xclient.Call(ctx, "SayHello", req, reply)
 	return reply, err
 }
-
-// =================== IGvgTestService ===================
-type IGvgTestService interface {
-	GetMapInfo(ctx context.Context, req *HelloRequest, reply *HelloResponse) (err error)
-}
-
-// =================== IGvgTestEtcdV3Client ===================
-type IGvgTestEtcdV3Client interface {
-	GetMapInfo(ctx context.Context, req *HelloRequest) (*HelloResponse, error)
-}
-
-type GvgTestEtcdV3Client struct {
-	xclient client.XClient
-}
-
-func NewGvgTestEtcdV3Client(xclient client.XClient) IGvgTestEtcdV3Client {
-	ret := &GvgTestEtcdV3Client{xclient: xclient}
-	return ret
-}
-func (c *GvgTestEtcdV3Client) GetMapInfo(ctx context.Context, req *HelloRequest) (reply *HelloResponse, err error) {
-	reply = &HelloResponse{}
-	err = c.xclient.Call(ctx, "GetMapInfo", req, reply)
-	return reply, err
-}
