@@ -28,7 +28,7 @@ func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error
 		Options:        &store.Config{},
 	}
 	share.Codecs[protocol.SerializeType(6)] = &util.JsoniterCodec{}
-	share.Codecs[protocol.SerializeType(7)] = &util.SonicJson{}
+	share.Codecs[protocol.SerializeType(7)] = &util.GogoProtoBuf{}
 	err = r.Start()
 	if err != nil {
 		return

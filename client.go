@@ -46,10 +46,10 @@ func main() {
 	}
 	allSerializeType := make([]protocol.SerializeType, 0)
 	//allSerializeType = append(allSerializeType, protocol.SerializeType(7))
-	allSerializeType = append(allSerializeType, protocol.SerializeType(6))
-	allSerializeType = append(allSerializeType, protocol.MsgPack)
+	//allSerializeType = append(allSerializeType, protocol.SerializeType(6))
+	//allSerializeType = append(allSerializeType, protocol.MsgPack)
 	allSerializeType = append(allSerializeType, protocol.ProtoBuffer)
-	allSerializeType = append(allSerializeType, protocol.JSON)
+	//allSerializeType = append(allSerializeType, protocol.JSON)
 	for _, serializeType := range allSerializeType {
 		f.SetCellValue("Sheet2", GetExecTableNum(serializeType)+"1", GetSValue(serializeType))
 		var total int64
@@ -88,7 +88,7 @@ func GetExecTableNum(serializeType protocol.SerializeType) string {
 func GetSValue(serializeType protocol.SerializeType) string {
 	switch serializeType {
 	case protocol.SerializeType(7):
-		return "sonicJson"
+		return "gogoProtobuf"
 	case protocol.SerializeType(6):
 		return "jsoniterCodec"
 	case protocol.SerializeType(3):
@@ -171,7 +171,7 @@ func NewEtcdV3XClient(etcdAddr string, serverPath string, serializeType protocol
 		return nil, err
 	}
 	share.Codecs[protocol.SerializeType(6)] = &util.JsoniterCodec{}
-	share.Codecs[protocol.SerializeType(7)] = &util.SonicJson{}
+	share.Codecs[protocol.SerializeType(7)] = &util.GogoProtoBuf{}
 	var DefaultOption = client.Option{
 		Retries:             3,
 		RPCPath:             share.DefaultRPCPath,
