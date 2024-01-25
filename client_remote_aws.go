@@ -21,21 +21,21 @@ import (
 )
 
 var (
-	helloClient pb.IHelloTestEtcdV3Client
-	gvgClient   pb.IGvgTestEtcdV3Client
+	helloClientAWS pb.IHelloTestEtcdV3Client
+	gvgClientAWS   pb.IGvgTestEtcdV3Client
 )
 
-func initClient(serializeType protocol.SerializeType) {
-	xclient, err := NewEtcdV3XClient("127.0.0.1:2379", "HelloTest", serializeType)
+func initClientAWS(serializeType protocol.SerializeType) {
+	xclient, err := NewEtcdV3XClientAWS("18.117.168.232:2379", "HelloTest", serializeType)
 	if err != nil {
 		return
 	}
-	xclient2, err := NewEtcdV3XClient("127.0.0.1:2379", "GvgTest", serializeType)
+	xclient2, err := NewEtcdV3XClientAWS("18.117.168.232:2379", "GvgTest", serializeType)
 	if err != nil {
 		return
 	}
-	helloClient = pb.NewHelloTestEtcdV3Client(xclient)
-	gvgClient = pb.NewGvgTestEtcdV3Client(xclient2)
+	helloClientAWS = pb.NewHelloTestEtcdV3Client(xclient)
+	gvgClientAWS = pb.NewGvgTestEtcdV3Client(xclient2)
 }
 
 func main() {
@@ -48,12 +48,12 @@ func main() {
 		return
 	}
 	allSerializeType := make([]protocol.SerializeType, 0)
-	//allSerializeType = append(allSerializeType, protocol.SerializeType(8)) // gogoprotobuf的服务端代码生成
-	//allSerializeType = append(allSerializeType, protocol.SerializeType(7)) // gogoprotobuf,选择这个需要执行一下gogoproto.sh
-	allSerializeType = append(allSerializeType, protocol.SerializeType(6)) // jsonCodec
-	allSerializeType = append(allSerializeType, protocol.MsgPack)
-	allSerializeType = append(allSerializeType, protocol.ProtoBuffer) // protobuf ,选择这个需要执行一下proto.sh
-	allSerializeType = append(allSerializeType, protocol.JSON)
+	allSerializeType = append(allSerializeType, protocol.SerializeType(8)) // gogoprotobuf的服务端代码生成
+	allSerializeType = append(allSerializeType, protocol.SerializeType(7)) // gogoprotobuf,选择这个需要执行一下gogoproto.sh
+	//allSerializeType = append(allSerializeType, protocol.SerializeType(6)) // jsonCodec
+	//allSerializeType = append(allSerializeType, protocol.MsgPack)
+	//allSerializeType = append(allSerializeType, protocol.ProtoBuffer) // protobuf ,选择这个需要执行一下proto.sh
+	//allSerializeType = append(allSerializeType, protocol.JSON)
 	for _, serializeType := range allSerializeType {
 		f.SetCellValue("Sheet2", common.GetExecTableNum(serializeType)+"1", common.GetSValue(serializeType))
 		var total int64
@@ -64,13 +64,13 @@ func main() {
 		if serializeType == protocol.SerializeType(8) {
 			realSerializeType = protocol.ProtoBuffer
 		}
-		initClient(realSerializeType)
+		initClientAWS(realSerializeType)
 		for i := 1; i <= 10; i++ {
 			var tps int64
 			if serializeType == protocol.SerializeType(8) {
-				tps = requestHello(common.GetSValue(serializeType), 10000000, 1000)
+				tps = requestHelloAWS(common.GetSValue(serializeType), 100, 100)
 			} else {
-				tps = requestGetGVGMap(common.GetSValue(serializeType), 10000000, 1000)
+				tps = requestGetGVGMapAWS(common.GetSValue(serializeType), 100, 100)
 			}
 			total += tps
 			f.SetCellValue("Sheet2", "A"+strconv.Itoa(i+1), i)
@@ -88,7 +88,7 @@ func main() {
 // concurrency:500
 // totalRequests:5000000
 // 意味着启500个协程，每个协程发5000000/500=10000个请求
-func requestHello(serializeType string, totalRequests int64, concurrency int64) (tps int64) {
+func requestHelloAWS(serializeType string, totalRequests int64, concurrency int64) (tps int64) {
 	args := &pb.HelloRequest{
 		Params: map[string]string{
 			"a": "1",
@@ -124,7 +124,7 @@ func requestHello(serializeType string, totalRequests int64, concurrency int64) 
 		go func(i int64) {
 			for j := int64(0); j < perClientReqs; j++ {
 
-				rsp, err := helloClient.SayHello(context.Background(), args)
+				rsp, err := helloClientAWS.SayHello(context.Background(), args)
 
 				if err == nil && rsp.Result == "suxuefeng" {
 					atomic.AddInt64(&counter.Succ, 1)
@@ -149,7 +149,7 @@ func requestHello(serializeType string, totalRequests int64, concurrency int64) 
 	return
 }
 
-func requestGetGVGMap(serializeType string, totalRequests int64, concurrency int64) (tps int64) {
+func requestGetGVGMapAWS(serializeType string, totalRequests int64, concurrency int64) (tps int64) {
 	args := &pb.HelloRequest{
 		Params: map[string]string{
 			"a": "1",
@@ -185,7 +185,7 @@ func requestGetGVGMap(serializeType string, totalRequests int64, concurrency int
 		go func(i int64) {
 			for j := int64(0); j < perClientReqs; j++ {
 
-				rsp, err := gvgClient.GetMapInfo(context.Background(), args)
+				rsp, err := gvgClientAWS.GetMapInfo(context.Background(), args)
 
 				if err == nil && rsp.Result == "suxuefeng" {
 					atomic.AddInt64(&counter.Succ, 1)
@@ -210,7 +210,7 @@ func requestGetGVGMap(serializeType string, totalRequests int64, concurrency int
 	return
 }
 
-func NewEtcdV3XClient(etcdAddr string, serverPath string, serializeType protocol.SerializeType) (client.XClient, error) {
+func NewEtcdV3XClientAWS(etcdAddr string, serverPath string, serializeType protocol.SerializeType) (client.XClient, error) {
 	d, err := eclient.NewEtcdV3Discovery("/rpcx_test", serverPath, []string{etcdAddr}, true, nil)
 	if err != nil {
 		return nil, err
