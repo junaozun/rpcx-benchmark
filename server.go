@@ -17,7 +17,9 @@ import (
 
 var etcdServer *server.Server
 
-const serverAddr = "18.117.168.232:4355"
+const serverAddr = "121.36.252.25:4355"
+
+const etcdAddr = "http://127.0.0.1:2379"
 
 func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error) {
 	srv = server.NewServer()
@@ -39,7 +41,7 @@ func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error
 }
 
 func init() {
-	srv, err := NewEtcdv3Server(serverAddr, "http://127.0.0.1:2379")
+	srv, err := NewEtcdv3Server(serverAddr, etcdAddr)
 	if err != nil {
 		return
 	}
