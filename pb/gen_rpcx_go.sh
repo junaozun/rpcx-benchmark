@@ -1,0 +1,1 @@
+protoc --rpcx_out=paths=source_relative:./ hello.proto

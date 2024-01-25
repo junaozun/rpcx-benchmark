@@ -1,8 +1,8 @@
 package main
 
 import (
-	"context"
 	"github.com/junaozun/rpcx-benchmark/pb"
+	"github.com/junaozun/rpcx-benchmark/server_func"
 	"github.com/junaozun/rpcx-benchmark/util"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rpcxio/libkv/store"
@@ -17,6 +17,8 @@ import (
 
 var etcdServer *server.Server
 
+const serverAddr = "localhost:4834"
+
 func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error) {
 	srv = server.NewServer()
 	r := &serverplugin.EtcdV3RegisterPlugin{
@@ -28,7 +30,6 @@ func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error
 		Options:        &store.Config{},
 	}
 	share.Codecs[protocol.SerializeType(6)] = &util.JsoniterCodec{}
-	share.Codecs[protocol.SerializeType(7)] = &util.GogoProtoBuf{}
 	err = r.Start()
 	if err != nil {
 		return
@@ -38,7 +39,7 @@ func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error
 }
 
 func init() {
-	srv, err := NewEtcdv3Server("localhost:4834", "http://127.0.0.1:2379")
+	srv, err := NewEtcdv3Server(serverAddr, "http://127.0.0.1:2379")
 	if err != nil {
 		return
 	}
@@ -46,41 +47,23 @@ func init() {
 }
 
 func main() {
-	err := etcdServer.RegisterName("HelloTest", new(GreeterImpl), "httpnfo=dddjejadjflds")
-	if err != nil {
-		return
-	}
-	pprof()
-	err = etcdServer.Serve("tcp", "localhost:4834")
-	if err != nil {
-		return
-	}
-}
-
-func pprof() {
 	go func() {
 		http.ListenAndServe("0.0.0.0:8899", http.DefaultServeMux)
 	}()
-}
-
-type GreeterImpl struct{}
-
-func (s *GreeterImpl) SayHello(ctx context.Context, args *pb.HelloRequest, reply *pb.HelloResponse) (err error) {
-	*reply = pb.HelloResponse{
-		Result: "suxuefeng",
-		Header: map[string]string{
-			"naifdhaof":   "sdfjalsdfjkwe",
-			"38459324":    "sdfjalsdfjkwe",
-			"8345245jhfj": "sdfjalsdfjkwe",
-		},
-		PageInfo: map[string]int64{
-			"skajdfdf444": 12,
-			"77656":       98,
-			"jfksadj":     1872,
-		},
-		TType:  "categoru",
-		Status: "active",
-		Code:   "13923",
+	//err := etcdServer.RegisterName("HelloTest", new(server_func.GreeterImpl), "httpnfo=dddjejadjflds")
+	//if err != nil {
+	//	return
+	//}
+	err := pb.RegisterHelloTestService(etcdServer, new(server_func.GreeterImpl), "httpnfo=dddjejadjflds")
+	if err != nil {
+		return
 	}
-	return nil
+	err = etcdServer.RegisterName("GvgTest", new(server_func.GvgTestImpl), "httpnfo=dddjejadjflds")
+	if err != nil {
+		return
+	}
+	err = etcdServer.Serve("tcp", serverAddr)
+	if err != nil {
+		return
+	}
 }
