@@ -17,7 +17,7 @@ import (
 
 var etcdServer *server.Server
 
-const serverAddr = "0.0.0.0:4834"
+const serverAddr = "18.117.168.232:4355"
 
 func NewEtcdv3Server(serverAddr, etcdAddr string) (srv *server.Server, err error) {
 	srv = server.NewServer()
